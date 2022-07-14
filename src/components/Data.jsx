@@ -5,7 +5,11 @@ import Text from './UI/Text';
 const LAUNCHES_QUERY = `
 {
   launchesPast(limit: 10) {
+    mission_name
     launch_date_local
+    launch_site {
+      site_name
+    }
     links {
       article_link
       video_link
@@ -13,17 +17,15 @@ const LAUNCHES_QUERY = `
     rocket {
       rocket_name
     }
-    ships {
-      name
-      model
-    }
   }
 }
 `
 
+
 const Data = () => {
 
   const [launches, setLaunches] = useState([]);
+
 
   const fetchData = async () => {
     await fetch("https://api.spacex.land/graphql/", {
@@ -43,29 +45,79 @@ const Data = () => {
 
   console.log(launches)
 
+  const [q, setQ] = useState("");
+  // const [searchParam] = useState(["rocket"]);
+  const data = Object.values(launches);
+  const search_parameters = Object.keys(Object.assign({}, ...data));
+
+  const search = (launches) => {
+    return launches.filter((item) => 
+        search_parameters.some((newItem) => 
+            
+          item[newItem]
+              .toString()
+              .toLowerCase()
+              .includes(q)
+          
+        )
+    );
+  }
+
+  const [filter, setFilter] = useState("");
+  
+
+  const handleClick = () => {
+    const filter_items = [...new Set(launches.map((item) => item.mission_name))];
+  }
+
+  // const search = (launches) => {
+  //   return launches.filter((item) => item.rocket.rocket_name.toLowerCase().includes(q))||
+  //   launches.filter((item) => item.mission_name.toLowerCase().includes(q))||
+  //   launches.filter((item) => item.launch_site.site_name.toLowerCase().includes(q))
+  // }
+
+
   return (
     <Box className='mt-10'>
-        <Box className="flex justify-center items-center">
-          <Box className="border py-2 px-12 text-white font-bold
-           bg-gray-300 rounded-md mr-4"
-          >
-            <Text className="text-sm">
-              Ships
-            </Text>            
+        <Box className="">
+          <input
+            type="search"
+            name="search-btn"
+            id="search-btn"  
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search mission . . ."          
+            className=" rounded-md py-2 px-2 border-gray-400 border-2 w-full"
+          />
+        </Box>
+
+        <Box className="block md:flex justify-center items-center mt-8 mb-20">
+          <Box>
+            <button className="bg-gray-600 rounded-md text-white text-sm px-6 py-2">
+              Launch Site
+            </button>            
           </Box>
 
-          <Box className="border py-2 px-12 text-white font-bold
-           bg-gray-300 rounded-md"
-          >
-            <Text className="text-sm">
-              Rockets
-            </Text>
+          <Box>
+            <button className="md:mx-6 my-6 md:my-0 bg-gray-600 rounded-md text-white text-sm px-6 py-2">
+              Mission Name
+            </button>
+          </Box>
+
+          <Box>
+            <button className="bg-gray-600 rounded-md text-white text-sm px-6 py-2">
+              Rocket Name
+            </button>
           </Box>
         </Box>
 
+        <Text className="text-3xl my-4 text-center font-bold">
+          Space X Details
+        </Text>
+
         <Box>
           {
-            launches.map((launch, i) => 
+            search(launches).map((launch, i) => 
               (
                 <>
                   <Box 
@@ -91,21 +143,27 @@ const Data = () => {
                     >
                       
                       <Box className="mb-4">
-                        <Text className="text-2xl font-bold">
-                          Ships
+                        <Text className="text-4xl pb-2 font-bold">
+                          Mission
                         </Text>
 
                         <Text>
-                          {launch.ships.length>0 ? launch.ships.map((ship,i)=>(
-                            <p key={i}>
-                              {ship.name}
-                            </p>
-                          )): "0 Ships were launched this day. . . "}   
+                          {launch.mission_name}   
+                        </Text>  
+                      </Box> 
+
+                      <Box className="mb-4">
+                        <Text className="text-4xl pb-2 font-bold">
+                          Launch Site
+                        </Text>
+
+                        <Text>
+                          {launch.launch_site.site_name}   
                         </Text>  
                       </Box> 
 
                       <Box>
-                        <Text className="text-2xl font-bold">
+                        <Text className="text-4xl pb-2 font-bold">
                           Rocket
                         </Text>
 
